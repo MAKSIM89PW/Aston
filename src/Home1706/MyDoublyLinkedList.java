@@ -1,9 +1,9 @@
 package Home1706;
 
 /**
- * Простой LinkedList
+ * Простой двусвязный LinkedList
  */
-public class MyLinkedList<T> {
+public class MyDoublyLinkedList<T> {
     private Node<T> head;
     private Node<T> tail;
     private int size = 0;
@@ -11,6 +11,7 @@ public class MyLinkedList<T> {
     private static class Node<T> {
         T data;
         Node<T> next;
+        Node<T> prev;
 
         Node(T data) {
             this.data = data;
@@ -28,6 +29,7 @@ public class MyLinkedList<T> {
             head = tail = newNode;
         } else {
             tail.next = newNode;
+            newNode.prev = tail;
             tail = newNode;
         }
         size++;
@@ -41,24 +43,19 @@ public class MyLinkedList<T> {
      */
     public T remove(int index) {
         checkIndex(index);
-        if (index == 0) {
-            T removedElement = head.data;
-            head = head.next;
-            if (head == null) {
-                tail = null;
-            }
-            size--;
-            return removedElement;
+        Node<T> current = getNode(index);
+        if (current.prev != null) {
+            current.prev.next = current.next;
         } else {
-            Node<T> previous = getNode(index - 1);
-            Node<T> current = previous.next;
-            previous.next = current.next;
-            if (current.next == null) {
-                tail = previous;
-            }
-            size--;
-            return current.data;
+            head = current.next;
         }
+        if (current.next != null) {
+            current.next.prev = current.prev;
+        } else {
+            tail = current.prev;
+        }
+        size--;
+        return current.data;
     }
 
     /**
@@ -94,10 +91,10 @@ public class MyLinkedList<T> {
      * @param toIndex конечный индекс (исключительно)
      * @return подсписок от fromIndex до toIndex
      */
-    public MyLinkedList<T> subList(int fromIndex, int toIndex) {
+    public MyDoublyLinkedList<T> subList(int fromIndex, int toIndex) {
         checkIndex(fromIndex);
         checkIndex(toIndex - 1);
-        MyLinkedList<T> subList = new MyLinkedList<>();
+        MyDoublyLinkedList<T> subList = new MyDoublyLinkedList<>();
         Node<T> current = getNode(fromIndex);
         for (int i = fromIndex; i < toIndex; i++) {
             subList.add(current.data);
@@ -122,9 +119,17 @@ public class MyLinkedList<T> {
     }
 
     private Node<T> getNode(int index) {
-        Node<T> current = head;
-        for (int i = 0; i < index; i++) {
-            current = current.next;
+        Node<T> current;
+        if (index < (size >> 1)) {
+            current = head;
+            for (int i = 0; i < index; i++) {
+                current = current.next;
+            }
+        } else {
+            current = tail;
+            for (int i = size - 1; i > index; i--) {
+                current = current.prev;
+            }
         }
         return current;
     }
